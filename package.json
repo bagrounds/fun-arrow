@@ -1,6 +1,6 @@
 {
   "name": "fun-arrow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A general interface to computation",
   "main": "src/index.js",
   "scripts": {
