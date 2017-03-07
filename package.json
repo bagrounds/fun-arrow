@@ -38,6 +38,6 @@
     "tap": "^8.0.1"
   },
   "dependencies": {
-    "fun-compose": "^0.2.2"
+    "fun-compose": "^0.3.0"
   }
 }

@@ -6,81 +6,112 @@
   'use strict'
 
   /* imports */
-  var compose = require('fun-compose')
+  var funCompose = require('fun-compose')
 
   /* exports */
-  module.exports = Arrow
-  module.exports.compose = arrowCompose
-  module.exports.first = arrowFirst
-  module.exports.second = arrowSecond
-  module.exports.parallel = arrowParallel
-  module.exports.split = arrowSplit
-  module.exports.merge = arrowMerge
+  module.exports = {}
+  module.exports.compose = compose
+  module.exports.first = first
+  module.exports.second = second
+  module.exports.parallel = parallel
+  module.exports.split = split
+  module.exports.merge = merge
 
-  function Arrow (f) {
-    if (!this) {
-      return new Arrow(f)
+  /**
+   *
+   * >>> :: Y a b -> Y b c -> Y a c
+   *
+   * @function module:fun-arrow.compose
+   *
+   * @param {Function} f - a -> b
+   * @param {Function} g - b -> c
+   *
+   * @return {Function} a -> c
+   */
+  function compose (f, g) {
+    return funCompose(f, g)
+  }
+
+  /**
+   *
+   * first :: Y a b -> Y (a, c) (b, c)
+   *
+   * @function module:fun-arrow.first
+   *
+   * @param {Function} f - a -> b
+   *
+   * @return {Function} [a, c] -> [b, c]
+   */
+  function first (f) {
+    return function (pair) {
+      return [f(pair[0]), pair[1]]
     }
-
-    this.compute = f
   }
 
-  function arrowCompose (a1, a2) {
-    return Arrow(compose([a1.compute, a2.compute]))
+  /**
+   *
+   * second :: Y a b -> Y (c, a) (c, b)
+   *
+   * @function module:fun-arrow.second
+   *
+   * @param {Function} f - a -> b
+   *
+   * @return {Function} [c, a] -> [c, b]
+   */
+  function second (f) {
+    return function (pair) {
+      return [pair[0], f(pair[1])]
+    }
   }
 
-  function arrowFirst (a) {
-    return Arrow(function (pair) {
-      return [a.compute(pair[0]), pair[1]]
-    })
+  /**
+   *
+   * *** :: Y a b -> Y c d -> Y (a, c) (b, d)
+   *
+   * @function module:fun-arrow.parallel
+   *
+   * @param {Function} f - a -> b
+   * @param {Function} g - c -> d
+   *
+   * @return {Function} [a, c] -> [b, d]
+   */
+  function parallel (f, g) {
+    return function (pair) {
+      return [f(pair[0]), g(pair[1])]
+    }
   }
 
-  function arrowSecond (a) {
-    return Arrow(function (pair) {
-      return [pair[0], a.compute(pair[1])]
-    })
+  /**
+   *
+   * &&& :: Y a b -> Y a c -> Y a (b, c)
+   *
+   * @function module:fun-arrow.split
+   *
+   * @param {Function} f - a -> b
+   * @param {Function} g - a -> c
+   *
+   * @return {Function} a -> [b, c]
+   */
+  function split (f, g) {
+    return function (x) {
+      return [f(x), g(x)]
+    }
   }
 
-  function arrowParallel (a1, a2) {
-    return Arrow(function (pair) {
-      return [a1.compute(pair[0]), a2.compute(pair[1])]
-    })
-  }
-
-  function arrowSplit (a) {
-    return Arrow(function (x) {
-      return [a.compute(x), a.compute(x)]
-    })
-  }
-
-  function arrowMerge (a) {
-    return Arrow(function (pair) {
-      return a.compute(pair[0], pair[1])
-    })
-  }
-
-  Arrow.prototype.compose = function (arrow) {
-    return arrowCompose(arrow, this)
-  }
-
-  Arrow.prototype.first = function () {
-    return arrowFirst(this)
-  }
-
-  Arrow.prototype.second = function () {
-    return arrowSecond(this)
-  }
-
-  Arrow.prototype.parallel = function (arrow) {
-    return arrowParallel(arrow, this)
-  }
-
-  Arrow.prototype.split = function () {
-    return arrowSplit(this)
-  }
-
-  Arrow.prototype.merge = function () {
-    return arrowMerge(this)
+  /**
+   *
+   * ??? :: Y (a, b) c -> Y (a, b) c
+   *
+   * @function module:fun-arrow.merge
+   *
+   * @param {Function} f - (a, b) -> c
+   *
+   * @return {Function} [a, b] -> c
+   */
+  function merge (f) {
+    return function (pair) {
+      return f(pair[0], pair[1])
+    }
   }
 })()
 
